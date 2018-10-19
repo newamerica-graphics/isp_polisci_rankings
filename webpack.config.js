@@ -21,7 +21,7 @@ module.exports = env => {
       env.deploy === "development" && new webpack.HotModuleReplacementPlugin(),
       new HtmlWebpackPlugin({
         title: "",
-        chartIDs: [],
+        chartIDs: ["viz__1", "viz__heatmap"],
         inject: false,
         template: path.resolve(__dirname, "src/index.html")
       }),
