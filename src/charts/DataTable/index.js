@@ -17,22 +17,29 @@ class DataTable extends React.Component {
       data,
       columns,
       title,
+      description,
       subtitle,
       source,
       showPagination,
+      children,
+      definitions,
+      showDefinitions,
+      height = "auto",
       ...otherProps
     } = this.props;
 
     return (
       <ChartContainer
         title={title}
-        subtitle={subtitle}
+        description={description}
         source={source}
-        width={1200}
-        height="auto"
+        maxWidth={1200}
+        height={height}
+        definitions={definitions}
+        showDefinitions={showDefinitions}
       >
         <div>
-          {this.props.children}
+          {children}
           <ReactTable
             data={data}
             columns={columns}

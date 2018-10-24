@@ -1,6 +1,8 @@
 import React from "react";
 import { Group } from "@vx/group";
 import { scaleBand } from "@vx/scale";
+import { withTooltip, TooltipWithBounds } from "@vx/tooltip";
+import { localPoint } from "@vx/event";
 import { min, max } from "d3-array";
 import { scale } from "chroma-js";
 import { AxisTop, AxisLeft } from "@vx/axis";
@@ -10,13 +12,21 @@ const Heatmap = ({
   width,
   height,
   title,
+  description,
   margin = {
     top: 220,
-    left: 140,
-    right: 20,
-    bottom: 110
+    left: 150,
+    right: 75,
+    bottom: 0
   },
-  data
+  data,
+  definitions,
+  showTooltip,
+  hideTooltip,
+  tooltipOpen,
+  tooltipLeft,
+  tooltipTop,
+  tooltipData
 }) => {
   // bounds
   const xMax = width - margin.left - margin.right;
@@ -32,7 +42,7 @@ const Heatmap = ({
   // scales
   //brighter teal: #a6fff7
 
-  const colorScale = scale(["#72DCC4", "#4C81DB"])
+  const colorScale = scale(["#4C81DB", "#ffffff"])
     .domain([dataMin, dataMax])
     .mode("rgb");
 
@@ -48,8 +58,13 @@ const Heatmap = ({
   });
 
   return (
-    <ChartContainer title={title}>
-      <svg width={width} height={height}>
+    <ChartContainer
+      title={title}
+      maxWidth={1200}
+      definitions={definitions}
+      description={description}
+    >
+      <svg viewBox={`0 0 ${width} ${height}`}>
         <AxisTop
           scale={xScale}
           top={margin.top}
@@ -74,10 +89,21 @@ const Heatmap = ({
           top={margin.top + xScale.padding()}
           hideTicks={true}
           hideAxisLine={true}
-          tickLabelProps={(val, i) => ({
-            fontSize: "12px",
-            dy: "3px"
-          })}
+          labelClassName="dv-heatmap-axis-label-item"
+          tickComponent={({ x, y, formattedValue }) => (
+            <g>
+              <rect
+                x={x}
+                y={y - 8}
+                width={margin.left}
+                height={yScale.bandwidth()}
+                fill="white"
+              />
+              <text x={x + 4} y={y + 5} fontSize="12px">
+                {formattedValue}
+              </text>
+            </g>
+          )}
         />
         <Group top={margin.top} left={margin.left}>
           {data.map((row, i) => {
@@ -100,6 +126,20 @@ const Heatmap = ({
                       height={yScale.bandwidth()}
                       x={xScale(column)}
                       y={0}
+                      onMouseEnter={e => {
+                        const data = {
+                          school: row.school,
+                          indicator: column,
+                          rank: row[column]
+                        };
+                        const coords = localPoint(e.target.ownerSVGElement, e);
+                        showTooltip({
+                          tooltipLeft: coords.x,
+                          tooltipTop: coords.y,
+                          tooltipData: data
+                        });
+                      }}
+                      onMouseOut={hideTooltip}
                     />
                   );
                 })}
@@ -108,8 +148,34 @@ const Heatmap = ({
           })}
         </Group>
       </svg>
+      {tooltipOpen && (
+        <TooltipWithBounds
+          left={tooltipLeft}
+          top={tooltipTop}
+          style={{
+            padding: "1rem",
+            borderRadius: 0,
+            boxShadow:
+              "0 2px 5px 0 rgba(0, 0, 0, 0.15), 0 2px 10px 0 rgba(0, 0, 0, 0.1)",
+            color: "#333333"
+          }}
+        >
+          <h4
+            style={{
+              marginTop: 0,
+              marginBottom: "0.5rem",
+              fontSize: "1rem"
+            }}
+          >
+            {tooltipData.school}
+          </h4>
+          <div style={{ paddingBottom: "0.5rem", fontSize: "14px" }}>
+            {tooltipData.indicator}: <strong>{tooltipData.rank}</strong>
+          </div>
+        </TooltipWithBounds>
+      )}
     </ChartContainer>
   );
 };
 
-export default Heatmap;
+export default withTooltip(Heatmap);

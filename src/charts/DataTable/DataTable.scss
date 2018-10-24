@@ -4,6 +4,10 @@
 @import "../../scss/spacing";
 @import "../../scss/widths";
 $desktop-padding: 25px;
+.dv-DataTable-search {
+  margin-bottom: 1rem;
+}
+
 .ReactTable {
   border: none;
 }

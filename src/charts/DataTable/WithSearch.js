@@ -26,7 +26,10 @@ export default function withSearch(Table) {
       }
       return (
         <Table data={_data} {...otherProps}>
-          <Search onChange={this.handleChange.bind(this)} />
+          <Search
+            className="dv-DataTable-search"
+            onChange={this.handleChange.bind(this)}
+          />
         </Table>
       );
     }
