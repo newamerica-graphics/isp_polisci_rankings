@@ -1,6 +1,8 @@
 import "./index.scss";
-import { DataTable } from "./charts/DataTable";
+import { DataTableWithSearch } from "./charts/DataTable";
 import Heatmap from "./charts/Heatmap";
+import ArrowPlot from "./charts/ArrowPlot";
+import DotPlot from "./charts/DotPlot";
 
 let queue = [];
 let data = null;
@@ -26,12 +28,42 @@ const settings = {
       }
     ];
     ReactDOM.render(
-      <DataTable
+      <DataTableWithSearch
         data={data.ranks}
         columns={columns}
         showPagination={true}
         defaultPageSize={10}
-        title="Test Title"
+        title={data.meta.filter(d => d.chart === "table1")[0].title}
+        description={data.meta.filter(d => d.chart === "table1")[0].description}
+        defaultSortMethod={(a, b) => +b - +a}
+        definitions={data.definitions}
+        showDefinitions={false}
+      />,
+      el
+    );
+  },
+  viz__arrowplot: el => {
+    ReactDOM.render(
+      <ArrowPlot
+        data={data.ranks}
+        definitions={data.definitions}
+        title={data.meta.filter(d => d.chart === "arrowplot")[0].title}
+        description={
+          data.meta.filter(d => d.chart === "arrowplot")[0].description
+        }
+      />,
+      el
+    );
+  },
+  viz__dotplot: el => {
+    ReactDOM.render(
+      <DotPlot
+        data={data.ranks}
+        definitions={data.definitions}
+        title={data.meta.filter(d => d.chart === "dotplot")[0].title}
+        description={
+          data.meta.filter(d => d.chart === "dotplot")[0].description
+        }
       />,
       el
     );
@@ -40,9 +72,35 @@ const settings = {
     ReactDOM.render(
       <Heatmap
         data={data.ranks}
+        definitions={data.definitions}
         width="1200"
         height="1200"
-        title="Test Title"
+        title={data.meta.filter(d => d.chart === "heatmap")[0].title}
+        description={
+          data.meta.filter(d => d.chart === "heatmap")[0].description
+        }
+      />,
+      el
+    );
+  },
+  viz__all_indicators: el => {
+    const columns = Object.keys(data.ranks[0]).map(column => ({
+      Header: column === "school" ? "School" : column,
+      accessor: column,
+      minWidth: 150
+    }));
+    ReactDOM.render(
+      <DataTableWithSearch
+        data={data.ranks}
+        height={1050}
+        columns={columns}
+        showPagination={true}
+        defaultPageSize={20}
+        title={data.meta.filter(d => d.chart === "table2")[0].title}
+        description={data.meta.filter(d => d.chart === "table2")[0].description}
+        defaultSortMethod={(a, b) => +b - +a}
+        definitions={data.definitions}
+        showDefinitions={true}
       />,
       el
     );
