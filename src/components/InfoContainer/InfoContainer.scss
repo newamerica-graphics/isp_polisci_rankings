@@ -1,0 +1,9 @@
+.dv-InfoContainer {
+  height: 100%;
+  overflow: scroll;
+  &__item {
+    background-color: #fff;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+}
