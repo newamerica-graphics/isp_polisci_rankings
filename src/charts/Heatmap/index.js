@@ -2,6 +2,7 @@ import React from "react";
 import { Group } from "@vx/group";
 import { scaleBand } from "@vx/scale";
 import { withTooltip, TooltipWithBounds } from "@vx/tooltip";
+import { ParentSize } from "@vx/responsive";
 import { localPoint } from "@vx/event";
 import { min, max } from "d3-array";
 import { scale } from "chroma-js";
@@ -15,8 +16,8 @@ const Heatmap = ({
   description,
   margin = {
     top: 220,
-    left: 150,
-    right: 75,
+    left: 250,
+    right: 90,
     bottom: 0
   },
   data,
@@ -29,125 +30,149 @@ const Heatmap = ({
   tooltipData
 }) => {
   // bounds
-  const xMax = width - margin.left - margin.right;
-  const yMax = height - margin.bottom - margin.top;
-
-  const columns = Object.keys(data[0]).filter(
+  const columnNames = Object.keys(data[0]).filter(
     d => d !== "school" && d !== "NRC Ranking"
   );
+
+  const columnScales = columnNames.map(ind => ({
+    name: ind,
+    scale: scale(["#ffffff", "#4C81DB"])
+      .domain([0, max(data, d => parseFloat(d[ind]))])
+      .mode("rgb")
+  }));
   const schools = data.map(d => d.school);
-  const dataMin = min(data, d => min(columns, c => +d[c]));
-  const dataMax = max(data, d => max(columns, c => +d[c]));
-
-  // scales
-  //brighter teal: #a6fff7
-
-  const colorScale = scale(["#4C81DB", "#ffffff"])
-    .domain([dataMin, dataMax])
-    .mode("rgb");
-
-  const xScale = scaleBand({
-    range: [0, xMax],
-    domain: columns,
-    padding: 0.2
-  });
-  const yScale = scaleBand({
-    range: [0, yMax],
-    domain: schools,
-    padding: 0.2
-  });
 
   return (
     <ChartContainer
       title={title}
       maxWidth={1200}
+      height={height}
       definitions={definitions}
       description={description}
     >
-      <svg viewBox={`0 0 ${width} ${height}`}>
-        <AxisTop
-          scale={xScale}
-          top={margin.top}
-          left={margin.left}
-          hideTicks={true}
-          hideAxisLine={true}
-          tickLabelProps={(val, i) => ({
-            transform: `rotate(315 ${xScale(val)}, 0)`,
-            fontSize: "12px",
-            fontWeight:
-              val === "Academic Impact Ranking" ||
-              val === "Policy Engagement Ranking"
-                ? "bold"
-                : "normal",
-            dx: "10px",
-            dy: "10px"
-          })}
-        />
-        <AxisLeft
-          scale={yScale}
-          left={10}
-          top={margin.top + xScale.padding()}
-          hideTicks={true}
-          hideAxisLine={true}
-          labelClassName="dv-heatmap-axis-label-item"
-          tickComponent={({ x, y, formattedValue }) => (
-            <g>
-              <rect
-                x={x}
-                y={y - 8}
-                width={margin.left}
-                height={yScale.bandwidth()}
-                fill="white"
-              />
-              <text x={x + 4} y={y + 5} fontSize="12px">
-                {formattedValue}
-              </text>
-            </g>
-          )}
-        />
-        <Group top={margin.top} left={margin.left}>
-          {data.map((row, i) => {
-            return (
-              <Group
-                key={`heatmap-${i}`}
-                className="vx-heatmap-column"
-                top={yScale(row.school)}
-              >
-                {columns.map((column, j) => {
-                  {
-                    /* console.log(column); */
-                  }
-                  return (
+      <ParentSize>
+        {({ width, height }) => {
+          if (width < 600) {
+            margin.right = 10;
+            margin.top = 10;
+          } else {
+            margin.top = 220;
+            margin.right = 90;
+          }
+          const xMax = width - margin.left - margin.right;
+          const yMax = height - margin.bottom - margin.top;
+          const xScale = scaleBand({
+            range: [0, xMax],
+            domain: columnNames,
+            padding: 0.2
+          });
+          const yScale = scaleBand({
+            range: [0, yMax],
+            domain: schools,
+            padding: 0.2
+          });
+          return (
+            <svg width={width} height={height}>
+              {width > 600 && (
+                <AxisTop
+                  scale={xScale}
+                  top={margin.top}
+                  left={margin.left}
+                  hideTicks={true}
+                  hideAxisLine={true}
+                  tickLabelProps={(val, i) => ({
+                    transform: `rotate(315 ${xScale(val)}, 0)`,
+                    fontSize: "12px",
+                    dx: "10px",
+                    dy: "10px"
+                  })}
+                />
+              )}
+              <AxisLeft
+                scale={yScale}
+                left={10}
+                top={margin.top + xScale.padding()}
+                hideTicks={true}
+                hideAxisLine={true}
+                labelClassName="dv-heatmap-axis-label-item"
+                tickComponent={({ x, y, formattedValue }) => (
+                  <g>
                     <rect
-                      key={`heatmap-tile-rect-${j}`}
-                      className="heatmap-rect"
-                      fill={colorScale(+row[column])}
-                      width={xScale.bandwidth()}
+                      x={x}
+                      y={y - 8}
+                      width={margin.left}
                       height={yScale.bandwidth()}
-                      x={xScale(column)}
-                      y={0}
-                      onMouseEnter={e => {
-                        const data = {
-                          school: row.school,
-                          indicator: column,
-                          rank: row[column]
-                        };
-                        const coords = localPoint(e.target.ownerSVGElement, e);
-                        showTooltip({
-                          tooltipLeft: coords.x,
-                          tooltipTop: coords.y,
-                          tooltipData: data
-                        });
-                      }}
-                      onMouseOut={hideTooltip}
+                      fill="white"
                     />
+                    <text x={x + 4} y={y + 5} fontSize="12px">
+                      {formattedValue}
+                    </text>
+                  </g>
+                )}
+              />
+              <Group top={margin.top} left={margin.left}>
+                {data.map((row, i) => {
+                  return (
+                    <Group
+                      key={`heatmap-${i}`}
+                      className="vx-heatmap-column"
+                      top={yScale(row.school)}
+                    >
+                      {columnScales.map((column, j) => {
+                        return (
+                          <rect
+                            key={`heatmap-tile-rect-${j}`}
+                            className="heatmap-rect"
+                            fill={column.scale(parseFloat(row[column.name]))}
+                            width={xScale.bandwidth()}
+                            height={yScale.bandwidth()}
+                            x={xScale(column.name)}
+                            y={0}
+                            onMouseEnter={e => {
+                              const data = {
+                                school: row.school,
+                                indicator: column.name,
+                                rank: row[column.name]
+                              };
+                              const coords = localPoint(
+                                e.target.ownerSVGElement,
+                                e
+                              );
+                              showTooltip({
+                                tooltipLeft: coords.x,
+                                tooltipTop: coords.y,
+                                tooltipData: data
+                              });
+                            }}
+                            onMouseOut={hideTooltip}
+                            onTouchStart={e => {
+                              const data = {
+                                school: row.school,
+                                indicator: column.name,
+                                rank: row[column.name]
+                              };
+                              const coords = localPoint(
+                                e.target.ownerSVGElement,
+                                e
+                              );
+                              showTooltip({
+                                tooltipLeft: coords.x,
+                                tooltipTop: coords.y,
+                                tooltipData: data
+                              });
+                            }}
+                            onTouchEnd={hideTooltip}
+                          />
+                        );
+                      })}
+                    </Group>
                   );
                 })}
               </Group>
-            );
-          })}
-        </Group>
-      </svg>
+            </svg>
+          );
+        }}
+      </ParentSize>
       {tooltipOpen && (
         <TooltipWithBounds
           left={tooltipLeft}

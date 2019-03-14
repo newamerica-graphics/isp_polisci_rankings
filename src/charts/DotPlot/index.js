@@ -18,7 +18,7 @@ export default class DotPlot extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      indicator1: "Academic Impact Ranking",
+      indicator1: "Academic Books: Quantity and Academic Impact",
       indicator2: "Policy Engagement Ranking",
       hovered: ""
     };
@@ -43,9 +43,9 @@ export default class DotPlot extends React.Component {
     const { indicator1, indicator2 } = this.state;
     const margin = {
       top: 80,
-      right: 20,
-      bottom: 10,
-      left: 150
+      right: 37,
+      bottom: 0,
+      left: 250
     };
     const indicators = Object.keys(data[0]).filter(d => d !== "school");
     const schools = data.map(row => row.school);
@@ -176,7 +176,7 @@ export default class DotPlot extends React.Component {
                   xScale={xScale}
                   yScale={yScale}
                   width={xMax}
-                  height={yMax - 20}
+                  height={yMax - 19}
                   top={margin.top}
                   left={margin.left}
                   strokeDasharray="2,2"

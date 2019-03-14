@@ -17,7 +17,10 @@ const getNth = n =>
 export default class ArrowPlot extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { indicator: "Academic Impact Ranking", hovered: "" };
+    this.state = {
+      indicator: "Academic Books: Quantity and Academic Impact",
+      hovered: ""
+    };
     this.changeIndicator = this.changeIndicator.bind(this);
     this.setHoverState = debounce(this.setHover.bind(this), 200);
     this.clearHoverState = debounce(this.clearHover.bind(this), 200);
@@ -38,10 +41,10 @@ export default class ArrowPlot extends React.Component {
     const { data, definitions, description, title } = this.props;
     const { indicator } = this.state;
     const margin = {
-      top: 30,
-      right: 20,
-      bottom: 10,
-      left: 150
+      top: 28,
+      right: 37,
+      bottom: 0,
+      left: 250
     };
     const indicators = Object.keys(data[0]).filter(
       d => d !== "school" && d !== "NRC Ranking"

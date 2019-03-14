@@ -19,8 +19,8 @@ const settings = {
         accessor: "NRC Ranking"
       },
       {
-        Header: "Academic Impact Ranking",
-        accessor: "Academic Impact Ranking"
+        Header: "Academic Books: Quantity and Academic Impact",
+        accessor: "Academic Books: Quantity and Academic Impact"
       },
       {
         Header: "Policy Engagement Ranking",
@@ -71,10 +71,10 @@ const settings = {
   viz__heatmap: el => {
     ReactDOM.render(
       <Heatmap
-        data={data.ranks}
+        data={data.raw}
         definitions={data.definitions}
         width="1200"
-        height="1200"
+        height={1200}
         title={data.meta.filter(d => d.chart === "heatmap")[0].title}
         description={
           data.meta.filter(d => d.chart === "heatmap")[0].description
@@ -87,7 +87,7 @@ const settings = {
     const columns = Object.keys(data.ranks[0]).map(column => ({
       Header: column === "school" ? "School" : column,
       accessor: column,
-      minWidth: 150
+      minWidth: column === "school" ? 300 : 150
     }));
     ReactDOM.render(
       <DataTableWithSearch
